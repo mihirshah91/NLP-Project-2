@@ -7,6 +7,7 @@ Created on Oct 15, 2015
 
 from xml.dom import minidom
 from nltk import stem
+import random
 import re
 import operator
 import string
@@ -195,12 +196,17 @@ for lexelt in lexelts_test :
                     
             temp_sum=temp_sum*senseids[senseid]
             senseid_probability_predictions[senseid]=temp_sum
+            
             if temp_sum>maxSum:
                 maxSum=temp_sum
                 senseidLabel=senseid
-            if senseidLabel == "" :
-                senseidLabel=senseid
-            
+#             if senseidLabel == "" :
+#                 senseidLabel=senseid
+        
+        if senseidLabel == "U":
+         #print("inside blank")   
+         senseidLabel=random.choice(list(senseids.keys()))
+         #print("new="+ senseidLabel)                
         print(instance.getAttribute("id")+"\t"+senseidLabel)
         #print(senseidLabel)
         #print(PorterStemmer().stem_word(contexts.data))
