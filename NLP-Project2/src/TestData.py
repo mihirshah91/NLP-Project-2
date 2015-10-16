@@ -20,7 +20,7 @@ doc = minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\training
 doc_test = minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\test-data.xml")
 dictionary= minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\Dictionary.xml")
 
-
+'''Test'''
 lexelts_test = doc_test.getElementsByTagName("lexelt")
 lexelts_dictionary=dictionary.getElementsByTagName("lexelt")
 window_size_test=10           
