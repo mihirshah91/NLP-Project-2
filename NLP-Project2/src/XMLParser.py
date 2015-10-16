@@ -78,7 +78,7 @@ for lexelt in lexelts :
 
 #print(senseidProbability)
 #print(context_dictionary)
-print("-----------------------------")
+#print("-----------------------------")
 print(senseIdCount) 
 print("-----------------------------")
 
