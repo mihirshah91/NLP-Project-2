@@ -23,7 +23,7 @@ dictionary= minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\Di
 
 lexelts_test = doc_test.getElementsByTagName("lexelt")
 lexelts_dictionary=dictionary.getElementsByTagName("lexelt")
-window_size_test=5            
+window_size_test=10           
 trainingContextProbability={}
 stemmer=stem.snowball.EnglishStemmer()
 answers = doc.getElementsByTagName("answer")
@@ -31,7 +31,7 @@ lexelts = doc.getElementsByTagName("lexelt")
 senseidProbability={}
 senseIdCount={}
 context_dictionary={}
-window_size=10            
+window_size=20           
 stop = stopwords.words('english')
 trainingContextProbability={}
 lexeltSenseIdMap={}
@@ -93,8 +93,13 @@ for lexelt in lexelts :
             else:                
                 senseid_probability_for_a_word[senseid]=1
                 senseIdCount[senseid]=1
-                
-            context_dictionary[senseid]= firstChild_context_elements_stemmed+lastChild_context_elements_stemmed
+            
+            context_data=firstChild_context_elements_stemmed+lastChild_context_elements_stemmed
+            #print(context_data)
+            if senseid in context_dictionary:    
+                context_dictionary[senseid]= context_dictionary[senseid]+ context_data
+            else:
+                context_dictionary[senseid]= firstChild_context_elements_stemmed+lastChild_context_elements_stemmed   
         count+=1
     senseid_probability_for_a_word.update((x, y/count) for x, y in senseid_probability_for_a_word.items())
     senseidProbability[item_name]=senseid_probability_for_a_word
@@ -102,11 +107,12 @@ for lexelt in lexelts :
 
     #print( "item name:%s, count: %s " %  (item_name, count))
 #print(lexeltSenseIdMap)
-print(senseidProbability)
+#print(senseidProbability)
+#print("context dictionary =")
 #print(context_dictionary)
 #print("-----------------------------")
 #print(senseIdCount) 
-print("-----------------------------")
+print("Id,Prediction")
 
 
 '''
@@ -176,17 +182,28 @@ for lexelt in lexelts_test :
         #print(PorterStemmer().stem_word(contexts.data))
         
         senseid_probability_predictions={}
-        for senseid in lexeltSenseIdMap[item_name]:
+        senseids=senseidProbability[item_name]
+        senseidLabel=""
+        maxSum=0.0
+        for senseid in senseids:
             temp_sum=0.0
+            
             for word in feature_vector:
                 temp_dictionary=context_dictionary[senseid]
                 if word in temp_dictionary:
                     temp_sum=temp_sum+temp_dictionary[word]
                     
-            temp_sum=temp_sum*senseidProbability[senseid]
+            temp_sum=temp_sum*senseids[senseid]
             senseid_probability_predictions[senseid]=temp_sum
-        print(instance.getAttribute("id")+ " "+ max(senseid_probability_predictions.iteritems(), key=operator.itemgetter(1))[0] )
-        print(PorterStemmer().stem_word(contexts.data))
+            if temp_sum>maxSum:
+                maxSum=temp_sum
+                senseidLabel=senseid
+            if senseidLabel == "" :
+                senseidLabel=senseid
+            
+        print(instance.getAttribute("id")+"\t"+senseidLabel)
+        #print(senseidLabel)
+        #print(PorterStemmer().stem_word(contexts.data))
 
     
                
