@@ -205,9 +205,8 @@ for lexelt in lexelts_test :
 #                 senseidLabel=senseid
         
         if senseidLabel == "U":
-         #print("inside blank")   
-         senseidLabel=random.choice(list(senseids.keys()))
-         #print("new="+ senseidLabel)                
+         senseidLabel=(list(senseids.keys()))[0]
+                         
         print(instance.getAttribute("id")+"\t"+senseidLabel)
         #print(senseidLabel)
         #print(PorterStemmer().stem_word(contexts.data))
