@@ -14,6 +14,7 @@ import string
 from nltk.corpus import stopwords
 from nltk import PorterStemmer
 from XMLParser import senseidProbability, senseid
+from nltk.stem.lancaster import LancasterStemmer
 
 
 
@@ -73,8 +74,8 @@ for lexelt in lexelts :
         firstChild_context_elements= firstChild[-window_size:]
         lastChild_context_elements=lastChild[:window_size]
         
-        firstChild_context_elements_stemmed=[stemmer.stem(word) for word in firstChild_context_elements]
-        lastChild_context_elements_stemmed=[stemmer.stem(word) for word in lastChild_context_elements]
+        firstChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in firstChild_context_elements]
+        lastChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in lastChild_context_elements]
 
         #print(firstChild_context_elements_stemmed+ lastChild_context_elements_stemmed)
         #print(PorterStemmer().stem_word(contexts.data))
@@ -178,7 +179,7 @@ for lexelt in lexelts_test :
         firstChild_context_elements= firstChild[-window_size_test:]
         lastChild_context_elements=lastChild[:window_size_test]
         feature_vector= firstChild_context_elements+lastChild_context_elements
-        feature_vector_stemmed=[stemmer.stem(word) for word in feature_vector]
+        feature_vector_stemmed=[LancasterStemmer().stem(word) for word in feature_vector]
         #print(feature_vector_stemmed)
         #print(PorterStemmer().stem_word(contexts.data))
         
