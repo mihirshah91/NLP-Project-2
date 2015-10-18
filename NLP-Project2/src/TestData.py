@@ -15,6 +15,8 @@ from nltk.corpus import stopwords
 from nltk import PorterStemmer
 from XMLParser import senseidProbability, senseid
 from nltk.stem.lancaster import LancasterStemmer
+from nltk.corpus import wordnet as wn
+
 
 
 
@@ -25,7 +27,7 @@ dictionary= minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\Di
 '''Test'''
 lexelts_test = doc_test.getElementsByTagName("lexelt")
 lexelts_dictionary=dictionary.getElementsByTagName("lexelt")
-window_size_test=10           
+window_size_test=10        
 trainingContextProbability={}
 stemmer=stem.snowball.EnglishStemmer()
 answers = doc.getElementsByTagName("answer")
@@ -179,35 +181,69 @@ for lexelt in lexelts_test :
         firstChild_context_elements= firstChild[-window_size_test:]
         lastChild_context_elements=lastChild[:window_size_test]
         feature_vector= firstChild_context_elements+lastChild_context_elements
+        
+        featureVectorSynset=[]
+        for word in feature_vector:
+            synsets= wn.synsets(word)
+            list_syn=[]
+
+            for ss in synsets:
+                temp=ss.name()
+                temp=temp.split(".")[0]
+                list_syn.append(temp)
+            syn_set=set(list_syn)
+            syn_set=list(syn_set) 
+            syn_set=syn_set[:3] 
+            featureVectorSynset=featureVectorSynset+ syn_set
+        #print(featureVectorSynset)
+        feature_vector= list(set(feature_vector+featureVectorSynset))
+        #print(feature_vector)
         feature_vector_stemmed=[LancasterStemmer().stem(word) for word in feature_vector]
         #print(feature_vector_stemmed)
         #print(PorterStemmer().stem_word(contexts.data))
+        
+        
         
         senseid_probability_predictions={}
         senseids=senseidProbability[item_name]
         senseidLabel=""
         maxSum=0.0
         for senseid in senseids:
-            temp_sum=0.0
-            
-            for word in feature_vector:
+            if senseid != "U":
+                temp_sum=0.0
                 temp_dictionary=context_dictionary[senseid]
-                if word in temp_dictionary:
-                    temp_sum=temp_sum+temp_dictionary[word]
+                for word in feature_vector_stemmed:
                     
-            temp_sum=temp_sum*senseids[senseid]
-            senseid_probability_predictions[senseid]=temp_sum
-            
-            if temp_sum>maxSum:
-                maxSum=temp_sum
-                senseidLabel=senseid
-#             if senseidLabel == "" :
-#                 senseidLabel=senseid
+                    if word in temp_dictionary:
+                        temp_sum=temp_sum+temp_dictionary[word]
+                    
+                temp_sum=temp_sum*senseids[senseid]
+                senseid_probability_predictions[senseid]=temp_sum
+                
+                #print(temp_sum," ", senseid," ",end='')
+                
+                if maxSum == 0.0:
+                    maxSum=temp_sum
+                    senseidLabel=senseid
+                else:
+                    if temp_sum-maxSum < 0.05 and temp_sum-maxSum > -0.05 :
+                        maxSum=temp_sum
+                        senseidLabel=senseidLabel+ " "+ senseid
+                    else:
+                         if temp_sum > maxSum:
+                             maxSum=temp_sum
+                             senseidLabel=senseid
+
+        if senseidLabel == "":
+            if ((list(senseids.keys()))[0] != "U"):
+                senseidLabel=(list(senseids.keys()))[0]
+            else:
+                senseidLabel=(list(senseids.keys()))[1]    
+         
         
-        if senseidLabel == "U":
-         senseidLabel=(list(senseids.keys()))[0]
                          
         print(instance.getAttribute("id")+"\t"+senseidLabel)
+        
         #print(senseidLabel)
         #print(PorterStemmer().stem_word(contexts.data))
 

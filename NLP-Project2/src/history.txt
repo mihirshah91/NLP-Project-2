@@ -1,0 +1,8 @@
+submission 1 -- initial co-occurance -- but mistake of incorrect context count in the training data -- only 10 words were coming (10,20)
+submission 2 -- correct context mistake in training data n made window_test=15 and window_train = 30
+submission3- increased window size -- 40,20 --discard
+submission 4 -- changed to 10 & 20 with the corrected mistake
+submission5 - generated random number generator for the U
+submission6 - changed stemming to Lancaster
+submission7 -- random number removal -- highest currently
+8 - synonyms multiple sense completely discarding U
