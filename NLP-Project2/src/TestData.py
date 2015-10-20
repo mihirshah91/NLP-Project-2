@@ -27,7 +27,7 @@ dictionary= minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\Di
 '''Test'''
 lexelts_test = doc_test.getElementsByTagName("lexelt")
 lexelts_dictionary=dictionary.getElementsByTagName("lexelt")
-window_size_test=10        
+window_size_test=13     
 trainingContextProbability={}
 stemmer=stem.snowball.EnglishStemmer()
 answers = doc.getElementsByTagName("answer")
@@ -35,7 +35,7 @@ lexelts = doc.getElementsByTagName("lexelt")
 senseidProbability={}
 senseIdCount={}
 context_dictionary={}
-window_size=20           
+window_size=15           
 stop = stopwords.words('english')
 trainingContextProbability={}
 lexeltSenseIdMap={}
@@ -226,7 +226,7 @@ for lexelt in lexelts_test :
                     maxSum=temp_sum
                     senseidLabel=senseid
                 else:
-                    if temp_sum-maxSum < 0.05 and temp_sum-maxSum > -0.05 :
+                    if temp_sum-maxSum < 0.01 and temp_sum-maxSum > -0.01 :
                         maxSum=temp_sum
                         senseidLabel=senseidLabel+ " "+ senseid
                     else:
