@@ -7,16 +7,11 @@ Created on Oct 15, 2015
 
 from xml.dom import minidom
 from nltk import stem
-import random
-import re
-import operator
 import string
 from nltk.corpus import stopwords
-from nltk import PorterStemmer
-from XMLParser import senseidProbability, senseid
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.corpus import wordnet as wn
-
+import csv
 
 
 
@@ -27,9 +22,8 @@ dictionary= minidom.parse("D:\\MEng folders\\NLP\\project2\\well formed xmls\\Di
 '''Test'''
 lexelts_test = doc_test.getElementsByTagName("lexelt")
 lexelts_dictionary=dictionary.getElementsByTagName("lexelt")
-window_size_test=13     
-trainingContextProbability={}
-stemmer=stem.snowball.EnglishStemmer()
+window_size_test=15     
+
 answers = doc.getElementsByTagName("answer")
 lexelts = doc.getElementsByTagName("lexelt")
 senseidProbability={}
@@ -37,8 +31,7 @@ senseIdCount={}
 context_dictionary={}
 window_size=15           
 stop = stopwords.words('english')
-trainingContextProbability={}
-lexeltSenseIdMap={}
+
 
 '''
 The following loop parses the xml document and computes the following things
@@ -51,7 +44,6 @@ for lexelt in lexelts :
     #instances=doc.getElementsByTagName("instance")
     instances=lexelt.getElementsByTagName("instance")
     item_name = lexelt.getAttribute("item")
-    lexeltSenseIdMap[item_name]=[]
     
     
     count=0; 
@@ -84,12 +76,10 @@ for lexelt in lexelts :
         
         for answer in answers:
             senseid=answer.getAttribute("senseid")
-            
-            temp_list=lexeltSenseIdMap[item_name]
-            if senseid not in temp_list:
-                lexeltSenseIdMap[item_name].append(senseid)
-            
-            
+            if senseid == 'U':
+                senseid= senseid+item_name
+              
+                  
             
             if senseid in senseid_probability_for_a_word:
                 senseid_probability_for_a_word[senseid]+=1
@@ -104,15 +94,29 @@ for lexelt in lexelts :
                 context_dictionary[senseid]= context_dictionary[senseid]+ context_data
             else:
                 context_dictionary[senseid]= firstChild_context_elements_stemmed+lastChild_context_elements_stemmed   
-        count+=1
+            count+=1
     senseid_probability_for_a_word.update((x, y/count) for x, y in senseid_probability_for_a_word.items())
     senseidProbability[item_name]=senseid_probability_for_a_word
     
 
     #print( "item name:%s, count: %s " %  (item_name, count))
 #print(lexeltSenseIdMap)
+#print("senseid probability=")
 #print(senseidProbability)
+
+f = open("D:\\MEng folders\\NLP\\project2\\senseidProb.txt",'w')
+
+f.write(str(senseidProbability))
+f.close()
+#print("senseid count=")
+f = open('D:\\MEng folders\\NLP\\project2\\senseIdCount.txt','w')
+f.write(str(senseIdCount))
+f.close()
+#print(senseIdCount)
 #print("context dictionary =")
+f = open('D:\\MEng folders\\NLP\\project2\\context_dictionaryRaw.txt','w')
+f.write(str(context_dictionary))
+f.close()
 #print(context_dictionary)
 #print("-----------------------------")
 #print(senseIdCount) 
@@ -139,7 +143,11 @@ for senseid in context_dictionary:
     
     #temp_dictionary.update((x, y/senseIdCount[senseid]) for x, y in temp_dictionary.items())
     #trainingContextProbability[senseid]=temp_dictionary
-    
+
+
+f = open('D:\\MEng folders\\NLP\\project2\\context_dictionaryCount.txt','w')
+f.write(str(context_dictionary)) 
+f.close()    
 
 for senseid in context_dictionary:
      temp_dictionary1={}
@@ -147,13 +155,21 @@ for senseid in context_dictionary:
      count=senseIdCount[senseid]
      for word in temp_dictionary1:
          temp_dictionary1[word]= temp_dictionary1[word]/count
-     trainingContextProbability[senseid]=temp_dictionary1
+     
 
 #print(context_dictionary)
 #print('--------------')
 #print(trainingContextProbability)
 
+f = open('D:\\MEng folders\\NLP\\project2\\context_dictionaryProb.txt','w')
+f.write(str(context_dictionary)) 
+f.close()    
 
+print("done outputting to a file")
+
+f = open('D:\\MEng folders\\NLP\\project2\\Prediction21.csv','w')
+fcsv = csv.writer(f, delimiter=',')
+fcsv.writerows("Id,Prediction")
 
 for lexelt in lexelts_test :
     #instances=doc.getElementsByTagName("instance")
@@ -204,12 +220,11 @@ for lexelt in lexelts_test :
         
         
         
-        senseid_probability_predictions={}
         senseids=senseidProbability[item_name]
         senseidLabel=""
         maxSum=0.0
         for senseid in senseids:
-            if senseid != "U":
+            
                 temp_sum=0.0
                 temp_dictionary=context_dictionary[senseid]
                 for word in feature_vector_stemmed:
@@ -218,9 +233,11 @@ for lexelt in lexelts_test :
                         temp_sum=temp_sum+temp_dictionary[word]
                     
                 temp_sum=temp_sum*senseids[senseid]
-                senseid_probability_predictions[senseid]=temp_sum
-                
+                               
                 #print(temp_sum," ", senseid," ",end='')
+                
+                if senseid == "U" + item_name:
+                    senseid="U"
                 
                 if maxSum == 0.0:
                     maxSum=temp_sum
@@ -234,16 +251,15 @@ for lexelt in lexelts_test :
                              maxSum=temp_sum
                              senseidLabel=senseid
 
-        if senseidLabel == "":
-            if ((list(senseids.keys()))[0] != "U"):
-                senseidLabel=(list(senseids.keys()))[0]
-            else:
-                senseidLabel=(list(senseids.keys()))[1]    
          
         
+        
+        fcsv.writerows(str(instance.getAttribute("id"))+ "," +str(senseidLabel)) 
+            
+
                          
         print(instance.getAttribute("id")+"\t"+senseidLabel)
-        
+f.close()
         #print(senseidLabel)
         #print(PorterStemmer().stem_word(contexts.data))
 
