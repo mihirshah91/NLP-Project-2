@@ -12,6 +12,7 @@ from nltk.corpus import stopwords
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.corpus import wordnet as wn
 import csv
+import math
 
 
 
@@ -65,8 +66,8 @@ for lexelt in lexelts :
         lastChild=list(filter(('').__ne__, lastChild))
         firstChild= [i for i in firstChild if i not in stop]
         lastChild= [i for i in lastChild if i not in stop]
-        firstChild_context_elements= firstChild[-window_size:]
-        lastChild_context_elements=lastChild[:window_size]
+        firstChild_context_elements= firstChild
+        lastChild_context_elements=lastChild
         
         firstChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in firstChild_context_elements]
         lastChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in lastChild_context_elements]
@@ -167,9 +168,14 @@ f.close()
 
 print("done outputting to a file")
 
-f = open('D:\\MEng folders\\NLP\\project2\\Prediction21.csv','w')
+f = open('D:\\MEng folders\\NLP\\project2\\Prediction321.csv','w')
 fcsv = csv.writer(f, delimiter=',')
 fcsv.writerows("Id,Prediction")
+
+f2 = open('D:\\MEng folders\\NLP\\project2\\temp_sums.txt','w')
+f3 = open('D:\\MEng folders\\NLP\\project2\\featureVectors.txt','w')
+
+
 
 for lexelt in lexelts_test :
     #instances=doc.getElementsByTagName("instance")
@@ -194,8 +200,8 @@ for lexelt in lexelts_test :
         lastChild=list(filter(('').__ne__, lastChild))
         firstChild= [i for i in firstChild if i not in stop]
         lastChild= [i for i in lastChild if i not in stop]
-        firstChild_context_elements= firstChild[-window_size_test:]
-        lastChild_context_elements=lastChild[:window_size_test]
+        firstChild_context_elements= firstChild
+        lastChild_context_elements=lastChild
         feature_vector= firstChild_context_elements+lastChild_context_elements
         
         featureVectorSynset=[]
@@ -209,15 +215,21 @@ for lexelt in lexelts_test :
                 list_syn.append(temp)
             syn_set=set(list_syn)
             syn_set=list(syn_set) 
-            syn_set=syn_set[:3] 
+            syn_set=syn_set[:2] 
             featureVectorSynset=featureVectorSynset+ syn_set
         #print(featureVectorSynset)
         feature_vector= list(set(feature_vector+featureVectorSynset))
         #print(feature_vector)
         feature_vector_stemmed=[LancasterStemmer().stem(word) for word in feature_vector]
+        
+        
+        
+        feature_vector_stemmed_dict = dict()
+        for i in feature_vector_stemmed:
+            feature_vector_stemmed_dict[i] = feature_vector_stemmed_dict.get(i, 0) + 1
         #print(feature_vector_stemmed)
         #print(PorterStemmer().stem_word(contexts.data))
-        
+        f3.write(','.join(feature_vector_stemmed)+ "for instanceid "+ str(instance.getAttribute("id")) + "\n")
         
         
         senseids=senseidProbability[item_name]
@@ -225,14 +237,16 @@ for lexelt in lexelts_test :
         maxSum=0.0
         for senseid in senseids:
             
-                temp_sum=0.0
+                temp_sum=1.0
                 temp_dictionary=context_dictionary[senseid]
-                for word in feature_vector_stemmed:
+                for word in feature_vector_stemmed_dict:
                     
                     if word in temp_dictionary:
-                        temp_sum=temp_sum+temp_dictionary[word]
+                        temp_sum=temp_sum * (temp_dictionary[word]**feature_vector_stemmed_dict[word]) # probability raised to count of that word
                     
-                temp_sum=temp_sum*senseids[senseid]
+                temp_sum=temp_sum *(senseids[senseid])
+                
+                f2.write(str(temp_sum) + " " + str(senseid) + " " )
                                
                 #print(temp_sum," ", senseid," ",end='')
                 
@@ -240,10 +254,10 @@ for lexelt in lexelts_test :
                     senseid="U"
                 
                 if maxSum == 0.0:
-                    maxSum=temp_sum
+                    maxSum= temp_sum
                     senseidLabel=senseid
                 else:
-                    if temp_sum-maxSum < 0.01 and temp_sum-maxSum > -0.01 :
+                    if temp_sum-maxSum < 0.00001 and temp_sum-maxSum > -0.00001 :
                         maxSum=temp_sum
                         senseidLabel=senseidLabel+ " "+ senseid
                     else:
@@ -253,13 +267,16 @@ for lexelt in lexelts_test :
 
          
         
-        
+        f2.write("for instance" + str(instance.getAttribute("id")))
+        f2.write("\n")
         fcsv.writerows(str(instance.getAttribute("id"))+ "," +str(senseidLabel)) 
             
 
                          
         print(instance.getAttribute("id")+"\t"+senseidLabel)
 f.close()
+f2.close()
+f3.close()
         #print(senseidLabel)
         #print(PorterStemmer().stem_word(contexts.data))
 
