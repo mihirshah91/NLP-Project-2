@@ -13,6 +13,7 @@ from nltk.stem.lancaster import LancasterStemmer
 from nltk.corpus import wordnet as wn
 import csv
 from XMLParser import temp_dictionary1
+import math
 
 
 
@@ -71,8 +72,8 @@ for lexelt in lexelts :
         lastChild=list(filter(('').__ne__, lastChild))
         firstChild= [i for i in firstChild if i not in stop]
         lastChild= [i for i in lastChild if i not in stop]
-        firstChild_context_elements= firstChild[-window_size:]
-        lastChild_context_elements=lastChild[:window_size]
+        firstChild_context_elements= firstChild
+        lastChild_context_elements=lastChild
         
         firstChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in firstChild_context_elements]
         lastChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in lastChild_context_elements]
@@ -328,8 +329,8 @@ for lexelt in lexelts_test :
         lastChild=list(filter(('').__ne__, lastChild))
         firstChild= [i for i in firstChild if i not in stop]
         lastChild= [i for i in lastChild if i not in stop]
-        firstChild_context_elements= firstChild[-window_size_test:]
-        lastChild_context_elements=lastChild[:window_size_test]
+        firstChild_context_elements= firstChild
+        lastChild_context_elements=lastChild
         feature_vector= firstChild_context_elements+lastChild_context_elements
         
         feature_vector= [word.strip('\n') for word in feature_vector]
@@ -357,22 +358,24 @@ for lexelt in lexelts_test :
 #         if senseid == 'different%3:00:00::':
 #             print('feature vector for sense id'+ senseid)
 #             print(feature_vector_stemmed)
-        
+        feature_vector_stemmed_dict = dict()
+        for i in feature_vector_stemmed:
+            feature_vector_stemmed_dict[i] = feature_vector_stemmed_dict.get(i, 0) + 1
         
         senseids=senseidProbability[item_name]
         senseidLabel=""
         maxSum=0.0
         for senseid in senseids:
             
-                temp_sum=0.0
+                temp_sum=1.0
                 temp_dictionary=context_dictionary[senseid]
-                for word in feature_vector_stemmed:
+                for word in feature_vector_stemmed_dict:
                     
                     if word in temp_dictionary:
-                        temp_sum=temp_sum+temp_dictionary[word]
+                        temp_sum=temp_sum + (math.log(temp_dictionary[word])*feature_vector_stemmed_dict[word]) # probability raised to count of that word
                     
-                temp_sum=temp_sum*senseids[senseid]
-                               
+                temp_sum=temp_sum + (math.log((senseids[senseid])))
+                temp_sum= -temp_sum               
                 #print(temp_sum," ", senseid," ",end='')
                 f2.write(str(temp_sum) + " " + str(senseid) + " " )
                 
@@ -384,7 +387,7 @@ for lexelt in lexelts_test :
                     maxSum=temp_sum
                     senseidLabel=senseid
                 else:
-                    if temp_sum-maxSum < 0.01 and temp_sum-maxSum > -0.01 :
+                    if temp_sum-maxSum < 2 and temp_sum-maxSum > -2 :
                         maxSum=temp_sum
                         senseidLabel=senseidLabel+ " "+ senseid
                     else:
