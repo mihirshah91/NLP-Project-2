@@ -76,6 +76,10 @@ for lexelt in lexelts :
         
         firstChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in firstChild_context_elements]
         lastChild_context_elements_stemmed=[LancasterStemmer().stem(word) for word in lastChild_context_elements]
+        
+        firstChild_context_elements_stemmed = [word.strip('\n') for word in firstChild_context_elements_stemmed]
+        lastChild_context_elements_stemmed=[word.strip('\n') for word in lastChild_context_elements_stemmed]
+        
 
         #print(firstChild_context_elements_stemmed+ lastChild_context_elements_stemmed)
         #print(PorterStemmer().stem_word(contexts.data))
@@ -267,6 +271,8 @@ for senseid in context_dictionary:
      temp_dictionary1=context_dictionary[senseid]
      lexelt=senseIdLexeltMap[senseid]
 #     count= len(Total_contexts[lexelt])+ len(Total_contexts_unique[lexelt])
+#     count=senseIdCount[senseid] + len(Total_contexts_unique[lexelt])
+#     count= sum(temp_dictionary1.values()) + len(temp_dictionary1)
      count=senseIdCount[senseid]
 #     for word in temp_dictionary1:
 #          temp_dictionary1[word]= temp_dictionary1[word]/count
@@ -325,6 +331,8 @@ for lexelt in lexelts_test :
         firstChild_context_elements= firstChild[-window_size_test:]
         lastChild_context_elements=lastChild[:window_size_test]
         feature_vector= firstChild_context_elements+lastChild_context_elements
+        
+        feature_vector= [word.strip('\n') for word in feature_vector]
         
         featureVectorSynset=[]
         for word in feature_vector:
