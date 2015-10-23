@@ -242,10 +242,11 @@ for lexelt in lexelts_test :
                 for word in feature_vector_stemmed_dict:
                     
                     if word in temp_dictionary:
-                        temp_sum=temp_sum * (temp_dictionary[word]**feature_vector_stemmed_dict[word]) # probability raised to count of that word
+                        temp_sum=temp_sum + (math.log(temp_dictionary[word])*feature_vector_stemmed_dict[word]) # probability raised to count of that word
                     
-                temp_sum=temp_sum *(senseids[senseid])
+                temp_sum=temp_sum + math.log((senseids[senseid]))
                 
+                temp_sum = -temp_sum
                 f2.write(str(temp_sum) + " " + str(senseid) + " " )
                                
                 #print(temp_sum," ", senseid," ",end='')
@@ -257,7 +258,7 @@ for lexelt in lexelts_test :
                     maxSum= temp_sum
                     senseidLabel=senseid
                 else:
-                    if temp_sum-maxSum < 0.00001 and temp_sum-maxSum > -0.00001 :
+                    if temp_sum-maxSum < 2 and temp_sum-maxSum > -2 :
                         maxSum=temp_sum
                         senseidLabel=senseidLabel+ " "+ senseid
                     else:
